@@ -322,11 +322,13 @@ func (m *Master) InstallAPIs(c *Config, restOptionsGetter genericapiserver.RESTO
 }
 
 func getServersToValidate(storageFactory genericapiserver.StorageFactory) map[string]apiserver.Server {
+	// TODO: make Addr configurable
 	serversToValidate := map[string]apiserver.Server{
 		"controller-manager": {Addr: "127.0.0.1", Port: ports.ControllerManagerPort, Path: "/healthz"},
 		"scheduler":          {Addr: "127.0.0.1", Port: ports.SchedulerPort, Path: "/healthz"},
 	}
 
+	backendConfig := *storageFactory.BackendsConfig()
 	for ix, machine := range storageFactory.Backends() {
 		etcdUrl, err := url.Parse(machine)
 		if err != nil {
@@ -354,6 +356,9 @@ func getServersToValidate(storageFactory genericapiserver.StorageFactory) map[st
 			Port:        port,
 			Path:        "/health",
 			Validate:    etcdutil.EtcdHealthCheck,
+			KeyFile:     backendConfig.KeyFile,
+			CertFile:    backendConfig.CertFile,
+			CAFile:      backendConfig.CAFile,
 		}
 	}
 	return serversToValidate

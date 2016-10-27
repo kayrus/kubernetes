@@ -44,6 +44,9 @@ type StorageFactory interface {
 	// Backends gets all backends for all registered storage destinations.
 	// Used for getting all instances for health validations.
 	Backends() []string
+
+	// BackendsConfig returns configuration used for Backends
+	BackendsConfig() *storagebackend.Config
 }
 
 // DefaultStorageFactory takes a GroupResource and returns back its storage interface.  This result includes:
@@ -238,6 +241,11 @@ func (s *DefaultStorageFactory) Backends() []string {
 		backends.Insert(overrides.etcdLocation...)
 	}
 	return backends.List()
+}
+
+// Get backends' config
+func (s *DefaultStorageFactory) BackendsConfig() *storagebackend.Config {
+	return &s.StorageConfig
 }
 
 // NewStorageCodec assembles a storage codec for the provided storage media type, the provided serializer, and the requested

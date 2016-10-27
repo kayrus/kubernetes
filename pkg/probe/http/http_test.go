@@ -116,7 +116,7 @@ func TestHTTPProbeChecker(t *testing.T) {
 			if err != nil {
 				t.Errorf("case %d: unexpected error: %v", i, err)
 			}
-			health, output, err := prober.Probe(u, test.reqHeaders, 1*time.Second)
+			health, output, err := prober.Probe(u, test.reqHeaders, 1*time.Second, nil)
 			if test.health == probe.Unknown && err == nil {
 				t.Errorf("case %d: expected error", i)
 			}

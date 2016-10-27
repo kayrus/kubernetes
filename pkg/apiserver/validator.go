@@ -42,6 +42,9 @@ type Server struct {
 	Port        int
 	Path        string
 	EnableHTTPS bool
+	KeyFile     string
+	CertFile    string
+	CAFile      string
 	Validate    ValidatorFn
 }
 
@@ -64,8 +67,8 @@ func (server *Server) DoServerCheck(prober httpprober.HTTPProber) (probe.Result,
 		scheme = "https"
 	}
 	url := utilnet.FormatURL(scheme, server.Addr, server.Port, server.Path)
-
-	result, data, err := prober.Probe(url, nil, probeTimeOut)
+	// TODO: populate *tls.Config here (TLSConfigFor?)
+	result, data, err := prober.Probe(url, nil, probeTimeOut, nil)
 
 	if err != nil {
 		return probe.Unknown, "", err

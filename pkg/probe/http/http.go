@@ -37,7 +37,7 @@ func New() HTTPProber {
 }
 
 type HTTPProber interface {
-	Probe(url *url.URL, headers http.Header, timeout time.Duration) (probe.Result, string, error)
+	Probe(url *url.URL, headers http.Header, timeout time.Duration, tlsConfig *tls.Config) (probe.Result, string, error)
 }
 
 type httpProber struct {
@@ -45,7 +45,8 @@ type httpProber struct {
 }
 
 // Probe returns a ProbeRunner capable of running an http check.
-func (pr httpProber) Probe(url *url.URL, headers http.Header, timeout time.Duration) (probe.Result, string, error) {
+func (pr httpProber) Probe(url *url.URL, headers http.Header, timeout time.Duration, tlsConfig *tls.Config) (probe.Result, string, error) {
+	pr.transport.TLSClientConfig = tlsConfig
 	return DoHTTPProbe(url, headers, &http.Client{Timeout: timeout, Transport: pr.transport})
 }
 

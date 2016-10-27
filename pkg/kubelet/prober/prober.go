@@ -162,7 +162,8 @@ func (pb *prober) runProbe(p *api.Probe, pod *api.Pod, status api.PodStatus, con
 		url := formatURL(scheme, host, port, path)
 		headers := buildHeader(p.HTTPGet.HTTPHeaders)
 		glog.V(4).Infof("HTTP-Probe Headers: %v", headers)
-		return pb.http.Probe(url, headers, timeout)
+		// TODO: populate *tls.Config here (TLSConfigFor?)
+		return pb.http.Probe(url, headers, timeout, nil)
 	}
 	if p.TCPSocket != nil {
 		port, err := extractPort(p.TCPSocket.Port, container)
