@@ -38,8 +38,8 @@ func IPNetEqual(ipnet1, ipnet2 *net.IPNet) bool {
 	return false
 }
 
-// Returns if the given err is "connection reset by peer" error.
-func IsConnectionReset(err error) bool {
+// Convert an error to a syscall error type
+func errorToSyscalErrno(err error) syscall.Errno {
 	if urlErr, ok := err.(*url.Error); ok {
 		err = urlErr.Err
 	}
@@ -49,7 +49,44 @@ func IsConnectionReset(err error) bool {
 	if osErr, ok := err.(*os.SyscallError); ok {
 		err = osErr.Err
 	}
-	if errno, ok := err.(syscall.Errno); ok && errno == syscall.ECONNRESET {
+	if errno, ok := err.(syscall.Errno); ok {
+		return errno
+	}
+	return nil
+}
+
+// Returns if the given err is "connection reset by peer" error.
+func IsConnectionReset(err error) bool {
+	if err := errorToSyscalErrno(err); err != nil && err == syscall.ECONNRESET {
+		return true
+	}
+	return false
+}
+
+// Returns if the given err is "connection refused" error.
+func IsConnectionRefused(err error) bool {
+	if e := errorToSyscalErrno(err); e != nil && e == syscall.ECONNREFUSED {
+		return true
+	}
+	return false
+}
+
+// Returns if the given err is "software caused connection abort" error.
+func IsConnectionAborted(err error) bool {
+	if e := errorToSyscalErrno(err); e != nil && e == syscall.ECONNABORTED {
+		return true
+	}
+	return false
+}
+
+// Returns if the given err is a connection error.
+func IsConnectionBroken(err error) bool {
+	switch errorToSyscalErrno(err) {
+	case syscall.ECONNRESET:
+		return true
+	case syscall.ECONNREFUSED:
+		return true
+	case syscall.ECONNABORTED:
 		return true
 	}
 	return false
